@@ -10,6 +10,9 @@ module.exports = {
     mode: 'production',
     entry: './src/main.js',
     target: 'web',
+    performance: {
+        hints: false
+    },
     output: {
         filename: '[name].[contenthash].js',
         path: path.resolve(__dirname, 'dist'),

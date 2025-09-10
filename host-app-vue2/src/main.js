@@ -6,6 +6,7 @@ import i18n from './plugins/i18n';
 import { init } from '@module-federation/runtime';
 import { EventBus } from './plugins/eventBus';
 import { createStoreAdapter } from './store/store-adapter';
+import * as Sentry from '@sentry/vue';
 
 console.log('USER_APP_URL:', process.env.USER_APP_URL);
 
@@ -30,6 +31,43 @@ init({
 });
 
 Vue.config.productionTip = false;
+
+// Initialize Sentry before creating the Vue app
+Sentry.init({
+  dsn: 'https://32c56583f44fe6b590bb747a7a5f16ab@o4509507613425664.ingest.us.sentry.io/4509507615391744',
+  integrations: [
+    Sentry.vueIntegration({
+      Vue: Vue, // Pass the Vue constructor for Vue 2
+      tracingOptions: {
+        trackComponents: true,
+      },
+    }),
+    Sentry.browserTracingIntegration(),
+  ],
+  // Increase sample rates for testing
+  tracesSampleRate: 1.0, // 100% for testing
+  environment: process.env.NODE_ENV || 'development',
+  debug: true, // Enable debug mode to see console logs
+  beforeSend(event) {
+    console.log('Sentry: Sending event to Sentry:', event);
+    return event;
+  }
+});
+
+// Test that Sentry is working
+console.log('Sentry initialized successfully');
+
+// Add a test error function to global scope for testing
+window.testSentryError = function() {
+  console.log('Triggering test error for Sentry...');
+  Sentry.captureException(new Error('Test error from Sentry integration'));
+};
+
+// Add a test message function
+window.testSentryMessage = function() {
+  console.log('Sending test message to Sentry...');
+  Sentry.captureMessage('Test message from Sentry integration', 'info');
+};
 
 // Create the store adapter instance.
 // This instance will bridge the Vuex store to Vue 3 remote applications,
